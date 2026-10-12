@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "Instagram Saved Posts Unsave Helper",
+  "version": "1.0.0",
+  "description": "Scans Instagram saved posts and safely unsaves them with throttling and progress tracking.",
+  "permissions": ["storage"],
+  "host_permissions": ["https://www.instagram.com/*"],
+  "content_scripts": [
+    {
+      "matches": ["https://www.instagram.com/*"],
+      "js": [
+        "tools/unsave-instagram/config.js",
+        "tools/unsave-instagram/rateLimiter.js",
+        "tools/unsave-instagram/stateTracker.js",
+        "tools/unsave-instagram/actions.js",
+        "tools/unsave-instagram/scanner.js",
+        "tools/unsave-instagram/ui/progressBar.js",
+        "tools/unsave-instagram/ui/panel.js",
+        "tools/unsave-instagram/index.js"
+      ],
+      "css": ["tools/unsave-instagram/ui/panel.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}
