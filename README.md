@@ -1,66 +1,56 @@
 # Instagram Saved Posts Unsave Helper
 
-## Folder
+A Chrome extension (Manifest V3) that scans your Instagram saved posts and unsaves them one by one, with throttling and progress tracking.
 
-This package is intended to be placed in a Chrome extension project as:
-
-tools/unsave-instagram/
-
-The manifest included here loads the files in dependency order because Chrome
-content scripts are classic scripts, not ES modules.
+> **Disclaimer:** This is an unofficial tool and is not affiliated with or endorsed by Instagram or Meta. Automating actions on Instagram may go against its Terms of Use. Use it only on your own account and at your own risk.
 
 ## What it does
 
 1. Adds a floating control panel on Instagram.
-2. Scans post/reel links while scrolling the page.
+2. Scans post/reel links while scrolling your Saved page.
 3. Opens each post.
-4. Finds the actual Instagram "Remove from saved" button by accessible label,
-   rather than relying on fragile CSS class names.
-5. Clicks it.
-6. Verifies that the state changed to "Save".
-7. Closes the post.
-8. Waits a randomized delay before the next action.
-9. Saves progress in chrome.storage.local.
-10. Continues after failures instead of stopping the entire run.
+4. Finds the bookmark ("Remove" / "Remove from saved") button using accessible labels instead of fragile CSS class names.
+5. Clicks it and verifies the state changed to "Save".
+6. Closes the post.
+7. Waits a randomized delay (about 1.8-3.2 seconds) before the next action.
+8. Saves progress in `chrome.storage.local`, so a run can be resumed.
+9. Continues after failures instead of stopping the whole run.
+
+A single run is capped at 500 posts as a safety limit. Run it again to continue.
 
 ## Install
 
-1. Put this folder in your extension project.
-2. Make sure manifest.json is at the extension root.
-3. Open chrome://extensions.
-4. Enable Developer mode.
-5. Click Load unpacked.
-6. Select the extension root.
-7. Open Instagram.
-8. Open your Saved page.
-9. Use "Scan saved posts".
-10. After scanning, use "Unsave all found".
+1. Download or clone this repository.
+2. Open `chrome://extensions`.
+3. Turn on **Developer mode**.
+4. Click **Load unpacked** and select the repository folder (the one containing `manifest.json`).
+5. Open Instagram and go to your **Saved** page.
+6. In the floating panel, click **Scan saved posts**.
+7. When the scan finishes, click **Unsave all found**.
 
-## Important
+The panel also has **Pause** and **Reset progress** buttons. Resetting only clears the extension's own progress. It does not re-save anything on Instagram.
 
-Instagram changes its DOM frequently. This version deliberately avoids
-Instagram's generated CSS class names and prefers aria-label/title/text signals.
+## Project structure
 
-The most important diagnostic is printed to DevTools if the saved button cannot
-be found:
-
-[Unsave Helper] Visible button labels: ...
-
-If Instagram changes the accessible label again, update only config.js labels.
-
-Do not run this at very high speed. The included delays are intentionally
-conservative.
-
-## Current project structure
-
+```
+manifest.json
 tools/unsave-instagram/
-├── index.js
-├── scanner.js
-├── actions.js
-├── rateLimiter.js
-├── stateTracker.js
-├── ui/
-│   ├── panel.js
-│   ├── panel.css
-│   └── progressBar.js
-└── config.js
+├── config.js        # delays, limits, selectors
+├── rateLimiter.js   # randomized delays between actions
+├── stateTracker.js  # progress saved in chrome.storage.local
+├── actions.js       # opens posts, finds and clicks the bookmark button
+├── scanner.js       # scrolls the page and collects post links
+├── index.js         # ties everything together
+└── ui/
+    ├── panel.js
+    ├── panel.css
+    └── progressBar.js
+```
+
+Content scripts in Chrome are classic scripts, not ES modules, so `manifest.json` loads the files in dependency order.
+
+## Troubleshooting
+
+Instagram changes its page structure often. If the extension can't find the bookmark button, open DevTools (F12) and look in the Console for messages starting with `[Unsave Helper]`. A "Bookmark diagnostics" entry lists the buttons and icons it saw. The label matching lives in `tools/unsave-instagram/actions.js`, and delays and limits are in `config.js`.
+
+Please don't lower the delays too far. They are intentionally conservative.
